@@ -129,19 +129,19 @@ fun RiegoScreen(
                 Spacer(modifier = Modifier.height(20.dp))
                 Row {
                     Button(
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.Blue),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
                         onClick = { viewModel.updateRelayState(true) },
                         enabled = !relayState
                     ) {
-                        Text("Encender Riego")
+                        Text("Apagar Riego")
                     }
                     Spacer(modifier = Modifier.width(16.dp))
                     Button(
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Blue),
                         onClick = { viewModel.updateRelayState(false) },
                         enabled = relayState
                     ) {
-                        Text("Apagar Riego")
+                        Text("Encender Riego")
                     }
                 }
             }

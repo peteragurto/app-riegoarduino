@@ -1,5 +1,6 @@
 package com.peteragurto.riegoapp.presentation
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.peteragurto.riegoapp.data.DataStoreRepository
@@ -54,6 +55,7 @@ class RiegoViewModel(
         arduinoApi = ipAddress?.let { ip ->
             RetrofitHelper.getRetrofitInstance("http://$ip").create(ArduinoApi::class.java)
         }
+        Log.d("RiegoViewModel", "Arduino API actualizada: $ipAddress")
     }
 
     private fun startPeriodicUpdate() {
@@ -64,15 +66,18 @@ class RiegoViewModel(
                 delay(3000)
             }
         }
+        Log.d("RiegoViewModel", "Inicio de actualizaciones periódicas.")
     }
 
     private suspend fun checkConnection() {
         try {
             val response = arduinoApi?.getSensorValue()
             _connectionState.value = response?.isSuccessful == true
+            Log.d("RiegoViewModel", "Estado de conexión: ${_connectionState.value}")
         } catch (e: Exception) {
             _connectionState.value = false
             _errorMessage.value = "Error de conexión: ${e.message}"
+            Log.e("RiegoViewModel", "Error de conexión: ${e.message}", e)
         }
     }
 
@@ -80,6 +85,7 @@ class RiegoViewModel(
         viewModelScope.launch {
             dataStoreRepository.saveIpAddress(newIpAddress)
             // La actualización de _ipAddress y arduinoApi se hará en el collector del init
+            Log.d("RiegoViewModel", "Dirección IP guardada: $newIpAddress")
         }
     }
 
@@ -89,8 +95,10 @@ class RiegoViewModel(
                 val response = if (isOn) arduinoApi?.turnOnRelay() else arduinoApi?.turnOffRelay()
                 if (response?.isSuccessful == true) {
                     _relayState.value = isOn
+                    Log.d("RiegoViewModel", "Estado del relé actualizado: ${if (isOn) "encendido" else "apagado"}")
                 } else {
                     _errorMessage.value = "Error al cambiar el estado del relé: ${response?.code()}"
+                    Log.e("RiegoViewModel", "Error al cambiar el estado del relé: ${response?.code()}")
                 }
             } catch (e: Exception) {
                 _errorMessage.value = "Error al cambiar el estado del relé: ${e.message}"
@@ -131,8 +139,11 @@ class RiegoViewModel(
                 val sensorData = response.body()
                 _sensorValue.value = sensorData?.sensorValue ?: 0
                 _relayState.value = sensorData?.relayState == "on"
+                Log.d("RiegoViewModel", "Valor del sensor actualizado: ${_sensorValue.value}")
+                Log.d("RiegoViewModel", "Estado del relé: ${_relayState.value}")
             } else {
                 _errorMessage.value = "Error del servidor: ${response?.code()}"
+                Log.e("RiegoViewModel", "Error del servidor: ${response?.code()}")
             }
         } catch (e: IOException) {
             _errorMessage.value = "Error de red: ${e.message}"
